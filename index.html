@@ -4232,7 +4232,58 @@ async function clearAllData() {
     console.error("Clear All Data Error:", error);
     alert("❌ ഡാറ്റ ക്ലിയർ ചെയ്യുന്നതിൽ തടസ്സം നേരിട്ടു: " + error.message);
   }
+}// Schedule Data Admin Panel-ൽ കാണിക്കാനും Manage ചെയ്യാനും
+if (typeof db !== 'undefined') {
+  db.ref('schedules').on('value', (snapshot) => {
+    const data = snapshot.val();
+    const container = document.getElementById('admin-schedule-list');
+
+    if (container) {
+      if (data) {
+        let html = '';
+        Object.keys(data).forEach((key) => {
+          const item = data[key];
+          html += `
+            <div style="border: 1px solid #334155; padding: 10px; margin: 8px 0; border-radius: 6px; display: flex; justify-content: space-between; align-items: center; background: #1e293b;">
+              <div>
+                <strong style="color: #fbbf24;">${item.item || item.programName || 'Item'}</strong>
+                <div style="font-size: 12px; color: #94a3b8;">Stage: ${item.stage || '-'} | Judge: ${item.judge || '-'}</div>
+              </div>
+              <div>
+                <button type="button" onclick="editSchedule('${key}')" style="background: #f59e0b; color: #000; border: none; padding: 4px 8px; border-radius: 4px; font-weight: bold; margin-right: 5px; cursor: pointer;">Edit</button>
+                <button type="button" onclick="deleteSchedule('${key}')" style="background: #ef4444; color: #fff; border: none; padding: 4px 8px; border-radius: 4px; font-weight: bold; cursor: pointer;">Delete</button>
+              </div>
+            </div>
+          `;
+        });
+        container.innerHTML = html;
+      } else {
+        container.innerHTML = '<p style="font-size: 12px; color: #94a3b8; text-align: center;">ഇതുവരെ schedule ചെയ്ത പരിപാടികളൊന്നുമില്ല</p>';
+      }
+    }
+  });
 }
+
+// Edit Function
+window.editSchedule = function(key) {
+  db.ref('schedules/' + key).once('value').then((snapshot) => {
+    if (snapshot.exists()) {
+      const data = snapshot.val();
+      if(document.getElementById('admin-sch-stage')) document.getElementById('admin-sch-stage').value = data.stage || '';
+      if(document.getElementById('admin-sch-judge')) document.getElementById('admin-sch-judge').value = data.judge || '';
+      if(document.getElementById('admin-sch-id')) document.getElementById('admin-sch-id').value = key;
+      alert("ഷെഡ്യൂൾ വിവരങ്ങൾ എഡിറ്റ് ചെയ്യാനായി മുകളിലെ ഫീൽഡുകളിലേക്ക് മാറ്റിയിട്ടുണ്ട്.");
+    }
+  });
+};
+
+// Delete Function
+window.deleteSchedule = function(key) {
+  if (confirm("ഈ ഷെഡ്യൂൾ നീക്കം ചെയ്യണമെന്ന് ഉറപ്പാണോ?")) {
+    db.ref('schedules/' + key).remove();
+  }
+};
+
 
 </script>
 </body>
