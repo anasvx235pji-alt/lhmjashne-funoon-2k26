@@ -4202,6 +4202,38 @@ db.ref('settings/quick_links').on('value', snap => {
   }
   if(isAdminLoggedIn) renderAdminLinksList(links);
 });
+  // 🔥 CLEAR ALL DATA FUNCTION
+async function clearAllData() {
+  const firstConfirm = confirm("⚠️ മുന്നറിയിപ്പ്!\n\nഇത് ചെയ്താൽ ഡാറ്റാബേസിലെ മുഴുവൻ ഫലങ്ങളും ഷെഡ്യൂളുകളും എന്നെന്നേക്കുമായി മാഞ്ഞുപോകും.\n\nതുടരണമെന്ന് ഉറപ്പാണോ?");
+  if (!firstConfirm) return;
+
+  const securityWord = prompt("സ്ഥിരീകരിക്കാനായി 'DELETE' എന്ന് ഇംഗ്ലീഷിൽ ടൈപ്പ് ചെയ്യുക:");
+  if (securityWord !== "DELETE") {
+    alert("❌ പ്രവർത്തനം റദ്ദാക്കി! 'DELETE' എന്ന് കൃത്യമായി ടൈപ്പ് ചെയ്യണം.");
+    return;
+  }
+
+  try {
+    await db.ref('results').remove();
+    await db.ref('schedules').remove();
+    await db.ref('announcements').remove();
+    await db.ref('popup_notice').remove();
+    await db.ref('quick_links').remove();
+    await db.ref('slider_images').remove();
+    await db.ref('house_bonus').remove();
+    await db.ref('kalaprathibha').remove();
+
+    localStorage.clear();
+
+    alert("✅ ഡാറ്റാബേസിലെ മുഴുവൻ ഡാറ്റയും വിജയകരമായി ക്ലിയർ ചെയ്തു!");
+    window.location.reload();
+
+  } catch (error) {
+    console.error("Clear All Data Error:", error);
+    alert("❌ ഡാറ്റ ക്ലിയർ ചെയ്യുന്നതിൽ തടസ്സം നേരിട്ടു: " + error.message);
+  }
+}
+
 </script>
 </body>
 </html>
