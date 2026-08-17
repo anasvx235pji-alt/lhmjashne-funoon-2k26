@@ -4232,10 +4232,9 @@ async function clearAllData() {
     console.error("Clear All Data Error:", error);
     alert("❌ ഡാറ്റ ക്ലിയർ ചെയ്യുന്നതിൽ തടസ്സം നേരിട്ടു: " + error.message);
   }
-}
-  // Schedule Data Admin Panel-ൽ ലൈവായി കാണിക്കാൻ
+// Schedule Data Live Fetch & Time Auto Filter
 try {
-  const scheduleDb = typeof db !== 'undefined' ? db : (typeof database !== 'undefined' ? database : null);
+  const scheduleDb = (typeof db !== 'undefined' && db) ? db : ((typeof database !== 'undefined' && database) ? database : null);
   
   if (scheduleDb) {
     scheduleDb.ref('schedules').on('value', (snapshot) => {
@@ -4245,30 +4244,57 @@ try {
       if (container) {
         if (data) {
           let html = '';
+          const now = new Date();
+          const currentMinutes = now.getHours() * 60 + now.getMinutes();
+
           Object.keys(data).forEach((key) => {
             const item = data[key];
+
+            // സമയം കഴിഞ്ഞ് 15 മിനിറ്റ് ആയാൽ താനേ മായാൻ
+            if (item.time) {
+              let timeStr = item.time.toUpperCase().trim();
+              let hours = 0, minutes = 0;
+              
+              if (timeStr.includes(':')) {
+                const parts = timeStr.replace(/AM|PM/g, '').trim().split(':');
+                hours = parseInt(parts[0]) || 0;
+                minutes = parseInt(parts[1]) || 0;
+                if (timeStr.includes('PM') && hours < 12) hours += 12;
+                if (timeStr.includes('AM') && hours === 12) hours = 0;
+              }
+
+              const itemMinutes = hours * 60 + minutes;
+              if (itemMinutes > 0 && currentMinutes > (itemMinutes + 15)) {
+                return; 
+              }
+            }
+
             const name = item.event || item.itemName || item.programName || item.item || 'Program';
             const stage = item.stage || '-';
             const category = item.category || '-';
+            const timeDisplay = item.time || 'Time Not set';
 
             html += `
-              <div style="border: 1px solid #334155; padding: 12px; margin: 8px 0; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; background: #1e293b;">
-                <div>
-                  <strong style="color: #fbbf24; font-size: 14px;">${name}</strong>
-                  <div style="font-size: 12px; color: #94a3b8; margin-top: 2px;">
-                    Cat: ${category} | Stage: ${stage}
+              <div style="border: 1px solid #334155; padding: 12px; margin: 8px 0; border-radius: 8px; background: #1e293b; color: #fff;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <div>
+                    <strong style="color: #fbbf24; font-size: 14px;">${name}</strong>
+                    <div style="font-size: 12px; color: #94a3b8; margin-top: 2px;">
+                      Cat: ${category} | Stage: ${stage} | Time: ${timeDisplay}
+                    </div>
                   </div>
-                </div>
-                <div style="display: flex; gap: 6px;">
-                  <button type="button" onclick="editSchedule('${key}')" style="background: #f59e0b; color: #000; border: none; padding: 6px 12px; border-radius: 4px; font-weight: bold; cursor: pointer;">Edit</button>
-                  <button type="button" onclick="deleteSchedule('${key}')" style="background: #ef4444; color: #fff; border: none; padding: 6px 12px; border-radius: 4px; font-weight: bold; cursor: pointer;">Delete</button>
+                  <div style="display: flex; gap: 6px;">
+                    <button type="button" onclick="editSchedule('${key}')" style="background: #f59e0b; color: #000; border: none; padding: 6px 12px; border-radius: 4px; font-weight: bold; cursor: pointer;">Edit</button>
+                    <button type="button" onclick="deleteSchedule('${key}')" style="background: #ef4444; color: #fff; border: none; padding: 6px 12px; border-radius: 4px; font-weight: bold; cursor: pointer;">Delete</button>
+                  </div>
                 </div>
               </div>
             `;
           });
-          container.innerHTML = html;
+
+          container.innerHTML = html || '<p style="color: #94a3b8; text-align: center; padding: 10px;">ഇന്നത്തെ പരിപാടികൾ കഴിഞ്ഞു!</p>';
         } else {
-          container.innerHTML = '<p style="font-size: 12px; color: #94a3b8; text-align: center; padding: 10px;">ഇതുവരെ schedule ചെയ്ത പരിപാടികളൊന്നുമില്ല</p>';
+          container.innerHTML = '<p style="color: #94a3b8; text-align: center; padding: 10px;">ഇതുവരെ schedule ചെയ്ത പരിപാടികളൊന്നുമില്ല</p>';
         }
       }
     });
@@ -4279,7 +4305,7 @@ try {
 
 // Edit Function
 window.editSchedule = function(key) {
-  const scheduleDb = typeof db !== 'undefined' ? db : database;
+  const scheduleDb = (typeof db !== 'undefined' && db) ? db : database;
   scheduleDb.ref('schedules/' + key).once('value').then((snapshot) => {
     if (snapshot.exists()) {
       const data = snapshot.val();
@@ -4288,7 +4314,7 @@ window.editSchedule = function(key) {
       if(document.getElementById('admin-sch-category')) document.getElementById('admin-sch-category').value = data.category || '';
       if(document.getElementById('admin-sch-stage')) document.getElementById('admin-sch-stage').value = data.stage || '';
       
-      alert("വിവരങ്ങൾ ഫോമിലേക്ക് മാറ്റിയിട്ടുണ്ട്. മാറ്റങ്ങൾ വരുത്തിയ ശേഷം Save ചെയ്യുക.");
+      alert("വിവരങ്ങൾ ഫോമിലേക്ക് മാറ്റിയിട്ടുണ്ട്.");
     }
   });
 };
@@ -4296,7 +4322,7 @@ window.editSchedule = function(key) {
 // Delete Function
 window.deleteSchedule = function(key) {
   if (confirm("ഈ ഷെഡ്യൂൾ നീക്കം ചെയ്യണമെന്ന് ഉറപ്പാണോ?")) {
-    const scheduleDb = typeof db !== 'undefined' ? db : database;
+    const scheduleDb = (typeof db !== 'undefined' && db) ? db : database;
     scheduleDb.ref('schedules/' + key).remove();
   }
 };
