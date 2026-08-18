@@ -3494,9 +3494,12 @@ let cloudinaryConfig={cloudName:'e70zobj0', uploadPreset:'LHMTHALAKKSDATHUR', ap
 let galleryData={}; let galleryFilter='ALL'; let galleryVisibleCount=12; let galleryLightboxIndex=0; let galleryLightboxItems=[];
 
 function loadCloudinaryConfig(){
-  try{cloudinaryConfig={...cloudinaryConfig,...JSON.parse(localStorage.getItem(CLOUDINARY_CONFIG_KEY)||'{}')};}catch(e){}
-  const a=document.getElementById('cloudinary-cloud-name'),b=document.getElementById('cloudinary-upload-preset');
-  if(a)a.value=cloudinaryConfig.cloudName||''; if(b)b.value=cloudinaryConfig.uploadPreset||'';
+  cloudinaryConfig = {
+    cloudName: 'e70zobj0',
+    uploadPreset: 'LHMTHALAKKSDATHUR',
+    apiKey: '123456',
+    secret: 'dummy'
+  };
 }
 function saveCloudinaryConfig(){
   cloudinaryConfig={cloudName:document.getElementById('cloudinary-cloud-name')?.value.trim()||'',uploadPreset:document.getElementById('cloudinary-upload-preset')?.value.trim()||''};
