@@ -3661,7 +3661,7 @@ async function uploadGalleryImages(e){
   e.preventDefault();
   if(!auth.currentUser){showToast('Admin Login required!');return;}
   loadCloudinaryConfig();
-  const CLOUDINARY_SIGNED_UPLOAD_ENDPOINT = 'https://api.cloudinary.com/v1_1/e70zobj0/image/upload';
+  const CLOUDINARY_SIGNED_UPLOAD_ENDPOINT = 'https://api.cloudinary.com/v1_1/e70zobj0/auto/upload';
   const input=document.getElementById('gallery-upload-files'),category=document.getElementById('gallery-upload-category').value,status=document.getElementById('gallery-upload-status'),btn=document.getElementById('gallery-upload-btn');
   const files=[...(input?.files||[])]; if(!files.length){showToast('Photos തിരഞ്ഞെടുക്കുക!');return;}
   btn.disabled=true; let done=0,failed=0;
