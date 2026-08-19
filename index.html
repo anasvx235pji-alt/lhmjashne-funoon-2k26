@@ -3671,13 +3671,13 @@ async function uploadGalleryImages(e){
       if(!validateFileSize(file, 5)) { failed++; continue; }
       status.textContent=`Uploading ${done+failed+1}/${files.length}...`;
       const normalized = await normalizeImageFile(file, 2000, 0.9);
-      const fd=new FormData(); fd.append('file',normalized,'gallery.jpg'); fd.append('folder','jashne_funoon_2k26/gallery');
-      fd.append('upload_preset', 'LHMTHALAKKSDATHUR');
-      const idToken = await auth.currentUser.getIdToken();
-      const res=await fetch(CLOUDINARY_SIGNED_UPLOAD_ENDPOINT,{method:'POST',body:fd,credentials:'include',headers:{'Authorization':'Bearer '+idToken}});
-      if(!res.ok)throw new Error('Cloudinary signed upload failed');
-      const data=await res.json();
-      await db.ref('gallery').push({url:data.secure_url,publicId:data.public_id||'',category,title:file.name.replace(/\.[^.]+$/,''),createdAt:Date.now()});
+      const fd = new FormData();
+fd.append('file', normalized, 'gallery.jpg');
+fd.append('upload_preset', 'LHMTHALAKKSDATHUR');
+      const res = await fetch(CLOUDINARY_SIGNED_UPLOAD_ENDPOINT, { method: 'POST', body: fd });
+      if (!res.ok) throw new Error('Cloudinary upload failed');
+      const data = await res.json();
+      await db.ref('gallery').push({ url: data.secure_url, publicId: data.public_id || '', category: document.getElementById('gallery-upload-category')?.value || 'Highlights', title: file.name.replace(/\.[^/.]+$/, ''), createdAt: Date.now() });
       done++;
     }catch(err){console.error(err);failed++;}
   }
