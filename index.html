@@ -1155,7 +1155,7 @@ function showToast(msg,type='error',duration=3200){
             <select id="res-section-new" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 outline-none">
               <option value="Boys">Boys</option>
               <option value="Girls">Girls</option>
-              <option value="Mixed">Mixed</option>
+              <option value="mixed">mixed</option>
             </select>
           </div>
           <!-- Category Dropdown -->
@@ -1166,8 +1166,17 @@ function showToast(msg,type='error',duration=3200){
               <option value="Junior">Junior</option>
               <option value="Senior">Senior</option>
               <option value="SuperSenior">Super Senior</option>
+              <option value="General">General</option>
             </select>
           </div>
+          <!-- Kala Pratibha Toggle Switch -->
+<div class="flex items-center justify-between p-3 bg-slate-800/60 rounded-xl border border-slate-700 my-3">
+  <span class="text-xs font-semibold text-slate-200">Main Page-ൽ കലാപ്രതിഭ കാണിക്കുക</span>
+  <label class="relative inline-flex items-center cursor-pointer">
+    <input type="checkbox" id="toggle-kalapratibha-status" class="sr-only peer" onchange="toggleKalaPratibhaVisibility(this.checked)">
+    <div class="w-9 h-5 bg-slate-700 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-amber-500"></div>
+  </label>
+</div>
           <!-- Type Dropdown (Single/Group) -->
           <div>
             <label class="text-xs text-slate-300">ടൈപ്പ് (Type)</label>
@@ -4364,6 +4373,26 @@ db.ref('settings/quick_links').on('value', snap => {
 <script>
 if('serviceWorker' in navigator && location.protocol === 'https:'){
   window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}),{once:true});
+}
+  // Toggle Function
+function toggleKalaPratibhaVisibility(status) {
+  if (typeof db !== 'undefined') {
+    db.ref('settings/showKalaPratibha').set(status);
+  }
+}
+
+// Automatic Visibility Control for Main Page
+if (typeof db !== 'undefined') {
+  db.ref('settings/showKalaPratibha').on('value', snap => {
+    const isVisible = snap.val();
+    const mainBox = document.getElementById('kalapratibha-section');
+    const toggleBtn = document.getElementById('toggle-kalapratibha-status');
+    
+    if (toggleBtn) toggleBtn.checked = isVisible ?? true;
+    if (mainBox) {
+      mainBox.style.display = (isVisible === false) ? 'none' : 'block';
+    }
+  });
 }
 </script>
 </body>
